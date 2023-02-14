@@ -1,6 +1,6 @@
 # slang uses exceptions
-set(LLVM_REQUIRES_EH ON)
-set(LLVM_REQUIRES_RTTI ON)
+add_compile_options(-frtti)
+add_compile_options(-fexceptions)
 
 # Disable some compiler warnings cause by slang headers such that the
 # `ImportVerilog` build doesn't spew out a ton of warnings that are not related
