@@ -11,6 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "ImportVerilogInternals.h"
+#include "circt/Dialect/LLHD/IR/LLHDDialect.h"
 #include "circt/Dialect/Moore/MooreDialect.h"
 #include "mlir/IR/BuiltinTypes.h"
 #include "mlir/IR/Diagnostics.h"
@@ -178,7 +179,7 @@ mlir::OwningOpRef<mlir::ModuleOp> circt::importVerilog(SourceMgr &sourceMgr,
   compileTimer.stop();
 
   // Traverse the parsed Verilog AST and map it to the equivalent CIRCT ops.
-  context->loadDialect<moore::MooreDialect>();
+  context->loadDialect<moore::MooreDialect, llhd::LLHDDialect>();
   mlir::OwningOpRef<ModuleOp> module(
       ModuleOp::create(UnknownLoc::get(context)));
   auto conversionTimer = ts.nest("Verilog to dialect mapping");
