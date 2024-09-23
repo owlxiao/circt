@@ -185,7 +185,7 @@ struct Emitter {
   // Types
   void emitType(Type type, bool includeConst = true);
   void emitTypeWithColon(Type type) {
-    ps << PP::space << ":" << PP::nbsp;
+    ps << PP::nbsp << ":" << PP::nbsp;
     emitType(type);
   }
 
@@ -208,11 +208,11 @@ struct Emitter {
     // If wraps, indent.
     ps.scopedBox(PP::ibox2, [&]() {
       if (wordBeforeLHS) {
-        ps << *wordBeforeLHS << PP::space;
+        ps << *wordBeforeLHS << PP::nbsp;
       }
       emitLHS();
       // Allow breaking before 'syntax' (e.g., '=') if long assignment.
-      ps << PP::space << syntax << PP::nbsp; /* PP::space; */
+      ps << PP::nbsp << syntax << PP::nbsp; /* PP::nbsp; */
       // RHS is boxed to right of the syntax.
       ps.scopedBox(PP::ibox0, [&]() { emitRHS(); });
     });
@@ -227,7 +227,7 @@ struct Emitter {
   /// Each value is emitted by invoking `eachFn`.
   template <typename Container, typename EachFn>
   void interleaveComma(const Container &c, EachFn eachFn) {
-    llvm::interleave(c, eachFn, [&]() { ps << "," << PP::space; });
+    llvm::interleave(c, eachFn, [&]() { ps << "," << PP::nbsp; });
   }
 
   /// Emit a range of values separated by commas and a breakable space.
@@ -419,9 +419,9 @@ void Emitter::emitCircuit(CircuitOp op) {
 
 void Emitter::emitEnabledLayers(ArrayRef<Attribute> layers) {
   for (auto layer : layers) {
-    ps << PP::space;
+    ps << PP::nbsp;
     ps.cbox(2, IndentStyle::Block);
-    ps << "enablelayer" << PP::space;
+    ps << "enablelayer" << PP::nbsp;
     emitSymbol(cast<SymbolRefAttr>(layer));
     ps << PP::end;
   }
@@ -471,7 +471,7 @@ void Emitter::emitGenericIntrinsic(GenericIntrinsicOp op) {
         emitTypeWithColon(op.getResult().getType());
     });
     if (op.getNumOperands() != 0) {
-      ps << "," << PP::space;
+      ps << "," << PP::nbsp;
       ps.scopedBox(PP::ibox0, [&]() { interleaveComma(op->getOperands()); });
     }
     ps << ")";
@@ -723,7 +723,7 @@ void Emitter::emitStatement(RegOp op) {
   ps.scopedBox(PP::ibox2, [&]() {
     ps << "reg " << PPExtString(legalName);
     emitTypeWithColon(op.getResult().getType());
-    ps << "," << PP::space;
+    ps << "," << PP::nbsp;
     emitExpression(op.getClockVal());
   });
   emitLocationAndNewLine(op);
@@ -737,27 +737,27 @@ void Emitter::emitStatement(RegResetOp op) {
     ps.scopedBox(PP::ibox2, [&]() {
       ps << "regreset " << legalName;
       emitTypeWithColon(op.getResult().getType());
-      ps << "," << PP::space;
+      ps << "," << PP::nbsp;
       emitExpression(op.getClockVal());
-      ps << "," << PP::space;
+      ps << "," << PP::nbsp;
       emitExpression(op.getResetSignal());
-      ps << "," << PP::space;
+      ps << "," << PP::nbsp;
       emitExpression(op.getResetValue());
     });
   } else {
     ps.scopedBox(PP::ibox2, [&]() {
       ps << "reg " << legalName;
       emitTypeWithColon(op.getResult().getType());
-      ps << "," << PP::space;
+      ps << "," << PP::nbsp;
       emitExpression(op.getClockVal());
-      ps << PP::space << "with :";
+      ps << PP::nbsp << "with :";
       // Don't break this because of the newline.
       ps << PP::neverbreak;
       // No-paren version must be newline + indent.
       ps << PP::newline; // ibox2 will indent.
       ps << "reset => (" << PP::ibox0;
       emitExpression(op.getResetSignal());
-      ps << "," << PP::space;
+      ps << "," << PP::nbsp;
       emitExpression(op.getResetValue());
       ps << ")" << PP::end;
     });
@@ -779,13 +779,13 @@ void Emitter::emitStatement(StopOp op) {
   ps.scopedBox(PP::ibox2, [&]() {
     ps << "stop(" << PP::ibox0;
     emitExpression(op.getClock());
-    ps << "," << PP::space;
+    ps << "," << PP::nbsp;
     emitExpression(op.getCond());
-    ps << "," << PP::space;
+    ps << "," << PP::nbsp;
     ps.addAsString(op.getExitCode());
     ps << ")" << PP::end;
     if (!op.getName().empty()) {
-      ps << PP::space << ": " << PPExtString(legalize(op.getNameAttr()));
+      ps << PP::nbsp << ": " << PPExtString(legalize(op.getNameAttr()));
     }
   });
   emitLocationAndNewLine(op);
@@ -802,17 +802,17 @@ void Emitter::emitStatement(PrintFOp op) {
   ps.scopedBox(PP::ibox2, [&]() {
     ps << "printf(" << PP::ibox0;
     emitExpression(op.getClock());
-    ps << "," << PP::space;
+    ps << "," << PP::nbsp;
     emitExpression(op.getCond());
-    ps << "," << PP::space;
+    ps << "," << PP::nbsp;
     ps.writeQuotedEscaped(op.getFormatString());
     for (auto operand : op.getSubstitutions()) {
-      ps << "," << PP::space;
+      ps << "," << PP::nbsp;
       emitExpression(operand);
     }
     ps << ")" << PP::end;
     if (!op.getName().empty()) {
-      ps << PP::space << ": " << PPExtString(legalize(op.getNameAttr()));
+      ps << PP::nbsp << ": " << PPExtString(legalize(op.getNameAttr()));
     }
   });
   emitLocationAndNewLine(op);
@@ -824,15 +824,15 @@ void Emitter::emitVerifStatement(T op, StringRef mnemonic) {
   ps.scopedBox(PP::ibox2, [&]() {
     ps << mnemonic << "(" << PP::ibox0;
     emitExpression(op.getClock());
-    ps << "," << PP::space;
+    ps << "," << PP::nbsp;
     emitExpression(op.getPredicate());
-    ps << "," << PP::space;
+    ps << "," << PP::nbsp;
     emitExpression(op.getEnable());
-    ps << "," << PP::space;
+    ps << "," << PP::nbsp;
     ps.writeQuotedEscaped(op.getMessage());
     ps << ")" << PP::end;
     if (!op.getName().empty()) {
-      ps << PP::space << ": " << PPExtString(legalize(op.getNameAttr()));
+      ps << PP::nbsp << ": " << PPExtString(legalize(op.getNameAttr()));
     }
   });
   emitLocationAndNewLine(op);
@@ -843,12 +843,12 @@ void Emitter::emitStatement(ConnectOp op) {
   if (FIRVersion(3, 0, 0) <= version) {
     ps.scopedBox(PP::ibox2, [&]() {
       if (op.getSrc().getDefiningOp<InvalidValueOp>()) {
-        ps << "invalidate" << PP::space;
+        ps << "invalidate" << PP::nbsp;
         emitExpression(op.getDest());
       } else {
-        ps << "connect" << PP::space;
+        ps << "connect" << PP::nbsp;
         emitExpression(op.getDest());
-        ps << "," << PP::space;
+        ps << "," << PP::nbsp;
         emitExpression(op.getSrc());
       }
     });
@@ -870,12 +870,12 @@ void Emitter::emitStatement(MatchingConnectOp op) {
   if (FIRVersion(3, 0, 0) <= version) {
     ps.scopedBox(PP::ibox2, [&]() {
       if (op.getSrc().getDefiningOp<InvalidValueOp>()) {
-        ps << "invalidate" << PP::space;
+        ps << "invalidate" << PP::nbsp;
         emitExpression(op.getDest());
       } else {
-        ps << "connect" << PP::space;
+        ps << "connect" << PP::nbsp;
         emitExpression(op.getDest());
-        ps << "," << PP::space;
+        ps << "," << PP::nbsp;
         emitExpression(op.getSrc());
       }
     });
@@ -895,7 +895,7 @@ void Emitter::emitStatement(MatchingConnectOp op) {
 void Emitter::emitStatement(PropAssignOp op) {
   startStatement();
   ps.scopedBox(PP::ibox2, [&]() {
-    ps << "propassign" << PP::space;
+    ps << "propassign" << PP::nbsp;
     interleaveComma(op.getOperands());
   });
   emitLocationAndNewLine(op);
@@ -980,7 +980,8 @@ void Emitter::emitStatement(MemOp op) {
     ps.addAsString(op.getWriteLatency());
     ps << PP::newline;
 
-    SmallString<16> reader, writer, readwriter;
+    SmallString<16> writer, readwriter;
+    SmallVector<StringAttr> reader;
     for (std::pair<StringAttr, MemOp::PortKind> port : op.getPorts()) {
       auto add = [&](SmallString<16> &to, StringAttr name) {
         if (!to.empty())
@@ -989,7 +990,7 @@ void Emitter::emitStatement(MemOp op) {
       };
       switch (port.second) {
       case MemOp::PortKind::Read:
-        add(reader, legalize(port.first));
+        reader.push_back(port.first);
         break;
       case MemOp::PortKind::Write:
         add(writer, legalize(port.first));
@@ -1002,8 +1003,10 @@ void Emitter::emitStatement(MemOp op) {
         return;
       }
     }
-    if (!reader.empty())
-      ps << "reader => " << reader << PP::newline;
+    if (!reader.empty()) {
+      for (auto &r : reader)
+        ps << "reader => " << r << PP::newline;
+    }
     if (!writer.empty())
       ps << "writer => " << writer << PP::newline;
     if (!readwriter.empty())
@@ -1020,7 +1023,7 @@ void Emitter::emitStatement(SeqMemOp op) {
   ps.scopedBox(PP::ibox2, [&]() {
     ps << "smem " << PPExtString(legalize(op.getNameAttr()));
     emitTypeWithColon(op.getType());
-    ps << "," << PP::space;
+    ps << "," << PP::nbsp;
     emitAttribute(op.getRuw());
   });
   emitLocationAndNewLine(op);
@@ -1398,7 +1401,7 @@ void Emitter::emitPrimExpr(StringRef mnemonic, Operation *op,
   ps << mnemonic << "(" << PP::ibox0;
   interleaveComma(op->getOperands());
   if (!op->getOperands().empty() && !attrs.empty())
-    ps << "," << PP::space;
+    ps << "," << PP::nbsp;
   interleaveComma(attrs, [&](auto attr) { ps.addAsString(attr); });
   ps << ")" << PP::end;
 }
@@ -1470,7 +1473,7 @@ void Emitter::emitType(Type type, bool includeConst) {
         ps.scopedBox(PP::cbox0, [&]() {
           for (auto &element : type.getElements()) {
             if (anyEmitted)
-              ps << "," << PP::space;
+              ps << "," << PP::nbsp;
             ps.scopedBox(PP::ibox2, [&]() {
               if (element.isFlip)
                 ps << "flip ";
